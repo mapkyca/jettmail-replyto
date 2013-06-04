@@ -44,14 +44,23 @@ elgg_register_event_handler('init', 'system', function() {
                         $email_generator = new EmailAddressGenerator();
                         $reply_email = $email_generator->generateEmailAddress($reply_action , $guid, $to);
                         
-                        if ($reply_email)
+                        if ($reply_email) {
+                            elgg_log("JETTMAIL-REPLYTO: Generating email address $reply_email for action $reply_action");
                             return $reply_email;
-                        
+                        }
+                        else
+                            elgg_log("JETTMAIL-REPLYTO: Could not generate email address");
                     }
+                    else
+                        elgg_log("JETTMAIL-REPLYTO: $subtype is not something we can reply to.");
                 
                 }
+                else
+                    elgg_log("JETTMAIL-REPLYTO: No entity could be retrieved.");
             }
         }
+        else
+            elgg_log("JETTMAIL-REPLYTO: No notifications found.");
     });
     
 });
