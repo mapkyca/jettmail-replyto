@@ -18,4 +18,14 @@
         <name>jettmail</name>
         <version>2.0</version>
     </requires>
+    <requires>
+        <type>priority</type>
+        <plugin>notifications</plugin>
+        <priority>before</priority>
+    </requires>
+    <requires>
+        <type>priority</type>
+        <plugin>jettmail</plugin>
+        <priority>before</priority>
+    </requires>
 </plugin_manifest>
