@@ -80,6 +80,20 @@ elgg_register_event_handler('init', 'system', function() {
                         else
                             error_log("JETTMAIL-REPLYTO: Could not generate email address");
                     }
+                    // This is a message
+                    if (in_array($subtype, array("messages"))) {
+                        $reply_action = 'create.messages';
+                        
+                        $email_generator = new EmailAddressGenerator();
+                        $reply_email = $email_generator->generateEmailAddress($reply_action , $entity->fromId, $to);
+                        
+                        if ($reply_email) {
+                            error_log("JETTMAIL-REPLYTO: Generating email address $reply_email for action $reply_action");
+                            return $reply_email;
+                        }
+                        else
+                            error_log("JETTMAIL-REPLYTO: Could not generate email address");
+                    }
                     else
                         error_log("JETTMAIL-REPLYTO: $subtype is not something we can reply to.");
                 }
