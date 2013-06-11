@@ -81,7 +81,7 @@ elgg_register_event_handler('init', 'system', function() {
                             error_log("JETTMAIL-REPLYTO: Could not generate email address");
                     }
                     // This is a message
-                    if (in_array($subtype, array("messages"))) {
+                    else if (in_array($subtype, array("messages"))) {
                         $reply_action = 'create.messages';
                         
                         $email_generator = new EmailAddressGenerator();
