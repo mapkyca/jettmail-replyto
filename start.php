@@ -26,7 +26,18 @@ elgg_register_event_handler('init', 'system', function() {
             }
     );
     
-    elgg_register_plugin_hook_handler('notify:annotation:message', 'all',
+    elgg_register_event_handler('create', 'annotation', 
+            function($event, $type, $annotation) {
+                global $__jettmail_replyto_annotations;
+                if (!isset($__jettmail_replyto_annotations))
+                    $__jettmail_replyto_annotations = array();
+
+                $__jettmail_replyto_annotations[] = $annotation;
+                
+            }
+    );
+    
+    /*elgg_register_plugin_hook_handler('notify:annotation:message', 'all',
             function ($hook, $type, $message, $params) {
                 
                 global $__jettmail_replyto_annotations;
@@ -37,7 +48,7 @@ elgg_register_event_handler('init', 'system', function() {
                         $__jettmail_replyto_annotations[] = $annotation;
         
             }
-    );
+    );*/
     
     // Hook into from hook
     elgg_register_plugin_hook_handler('jettmail:from:email', 'none', function($hook, $entity_type, $returnvalue, $params){
