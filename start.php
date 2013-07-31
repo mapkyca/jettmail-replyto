@@ -78,11 +78,22 @@ elgg_register_event_handler('init', 'system', function() {
                 // See if we have an object context
                 foreach ($__jettmail_replyto_objects as $entity) {
                     
-                    // Get author
-                    $owner = get_entity($entity->owner_guid);
-                    if ($owner)
-                        return $owner->name;
+                    // Get subtype
+                    $subtype = $entity->getSubtype();
                     
+                    // Get author
+                    if (in_array($subtype, array("messages")))
+                    {
+                        $owner = get_entity($entity->fromId);
+                        if ($owner)
+                            return $owner->name;
+                    }
+                    else
+                    {
+                        $owner = get_entity($entity->owner_guid);
+                        if ($owner)
+                            return $owner->name;
+                    }
                 }
                    
             }
