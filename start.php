@@ -50,7 +50,48 @@ elgg_register_event_handler('init', 'system', function() {
             }
     );*/
     
-    // Hook into from hook
+    // Hook to generate a more sensible name for the email
+    elgg_register_plugin_hook_handler('jettmail:from:name', 'none', function($hook, $entity_type, $returnvalue, $params){
+        
+        global $__jettmail_replyto_objects;
+        global $__jettmail_replyto_annotations;
+        
+        $to = $params['to'];
+        $subject = $params['subject'];
+        $notifications = $params['notifications'];
+        
+        if ($notifications) {
+            
+            // Get notifications
+            foreach ($notifications as $guid => $details) {
+                
+                
+                // See if we have an annotation context
+                foreach ($__jettmail_replyto_annotations as $annotation) {
+                    
+                    $owner = get_entity($annotation->getOwnerGUID());
+                    if ($owner)
+                        return $owner->name;
+                    
+                }
+                
+                // See if we have an object context
+                foreach ($__jettmail_replyto_objects as $entity) {
+                    
+                    // Get author
+                    $owner = get_entity($entity->owner_guid);
+                    if ($owner)
+                        return $owner->name;
+                    
+                }
+                   
+            }
+            
+        }
+        
+    });
+    
+    // Hook into from hook to generate email address
     elgg_register_plugin_hook_handler('jettmail:from:email', 'none', function($hook, $entity_type, $returnvalue, $params){
         global $__jettmail_replyto_objects;
         global $__jettmail_replyto_annotations;
@@ -63,6 +104,35 @@ elgg_register_event_handler('init', 'system', function() {
             
             // Get notifications
             foreach ($notifications as $guid => $details) {
+                
+                // See if we have an annotation context
+                foreach ($__jettmail_replyto_annotations as $annotation) {
+                    
+                    // Get parent object
+                    $entity = $annotation->getEntity();
+                    
+                    // Get annotation subtype
+                    $subtype = $annotation->getSubtype();
+
+                    // Default action
+                    $reply_action = 'create.generic_comment';
+                    
+                    // See if we need another action
+                    if (in_array($subtype, array("group_topic_post"))) {
+                        $reply_action = 'create.group_topic_post';
+                    }
+                    
+                    $email_generator = new EmailAddressGenerator();
+                    $reply_email = $email_generator->generateEmailAddress($reply_action , $entity->guid, $to);
+
+                    if ($reply_email) {
+                        error_log("JETTMAIL-REPLYTO: Generating email address $reply_email for action $reply_action annotating {$entity->guid}");
+                        return $reply_email;
+                    }
+                    else
+                        error_log("JETTMAIL-REPLYTO: Could not generate email address for annotated object");
+                    
+                }
                 
                 // See if we have an object context
                 foreach ($__jettmail_replyto_objects as $entity) {
@@ -107,35 +177,6 @@ elgg_register_event_handler('init', 'system', function() {
                     }
                     else
                         error_log("JETTMAIL-REPLYTO: $subtype is not something we can reply to.");
-                }
-                
-                // See if we have an annotation context
-                foreach ($__jettmail_replyto_annotations as $annotation) {
-                    
-                    // Get parent object
-                    $entity = $annotation->getEntity();
-                    
-                    // Get annotation subtype
-                    $subtype = $annotation->getSubtype();
-
-                    // Default action
-                    $reply_action = 'create.generic_comment';
-                    
-                    // See if we need another action
-                    if (in_array($subtype, array("group_topic_post"))) {
-                        $reply_action = 'create.group_topic_post';
-                    }
-                    
-                    $email_generator = new EmailAddressGenerator();
-                    $reply_email = $email_generator->generateEmailAddress($reply_action , $entity->guid, $to);
-
-                    if ($reply_email) {
-                        error_log("JETTMAIL-REPLYTO: Generating email address $reply_email for action $reply_action annotating {$entity->guid}");
-                        return $reply_email;
-                    }
-                    else
-                        error_log("JETTMAIL-REPLYTO: Could not generate email address for annotated object");
-                    
                 }
                     
             }
